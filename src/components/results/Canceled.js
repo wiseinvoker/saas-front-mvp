@@ -11,6 +11,7 @@ import SearchIcon from '@material-ui/icons/Search';
 import YouTubeIcon from '@material-ui/icons/YouTube';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
+import Link from '@material-ui/core/Link';
 
 import AppAppBar from '../appbar/AppAppBar';
 import AppFooter from '../appbar/AppFooter';
@@ -67,7 +68,7 @@ const CanceledPage = (props) => {
             Your order has been canceled.
           </Typography>
           <Typography color="inherit" align="center" variant="h5" className={classes.h5}>
-            Get the full transcription of Youtube video now!
+            Get the full transcription of Youtube video now! <Link href="/">Go to Homepage</Link>
           </Typography>
         </Container>
       </section>

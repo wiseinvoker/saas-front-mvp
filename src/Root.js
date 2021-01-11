@@ -7,6 +7,7 @@ import { routerMiddleware, ConnectedRouter } from "connected-react-router";
 
 import rootReducer from "./Reducer";
 import { setCurrentUser, setToken } from "./components/login/LoginActions";
+import { setVideoInfo } from "./components/home/HomeActions";
 import { isEmpty } from "./utils/Utils";
 
 const Root = ({ children, initialState = {} }) => {
@@ -25,6 +26,10 @@ const Root = ({ children, initialState = {} }) => {
   if (!isEmpty(localStorage.getItem("user"))) {
     const user = JSON.parse(localStorage.getItem("user"));
     store.dispatch(setCurrentUser(user, ""));
+  }
+  if (!isEmpty(localStorage.getItem("videoinfo"))) {
+    const videoinfo = JSON.parse(localStorage.getItem("videoinfo"));
+    store.dispatch(setVideoInfo(videoinfo, ""));
   }
 
   return (

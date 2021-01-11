@@ -61,10 +61,11 @@ const styles = (theme) => ({
 const Home = (props) => {
   const { classes, getVideoInfo } = props;
   const videopath = useFormInput("");
-  const onSearch = () => {
+  const onSearch = (event) => {
     const url = videopath.value;
+    event.preventDefault();
     // https://www.youtube.com/watch?v=DLX62G4lc44
-    return getVideoInfo({url});
+    getVideoInfo({url}, "/yt-video");
   };
   return (
     <React.Fragment>
@@ -101,11 +102,9 @@ const Home = (props) => {
 
 function useFormInput(initialValue) {
   const [value, setValue] = useState(initialValue);
-
   const handleChange = e => {
     setValue(e.target.value);
   };
-
   const handleReset = () => {
     setValue("");
   };

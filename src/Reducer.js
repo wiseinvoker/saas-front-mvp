@@ -12,7 +12,7 @@ const createRootReducer = history =>
     createUser: signupReducer,
     auth: loginReducer,
     notes: notesReducer,
-    home: homeReducer,
+    video: homeReducer,
   });
 
 export default createRootReducer;

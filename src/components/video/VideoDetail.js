@@ -15,6 +15,8 @@ import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Button from '@material-ui/core/Button';
 import { loadStripe } from '@stripe/stripe-js';
+import moment from 'moment';
+
 import AppAppBar from '../appbar/AppAppBar';
 import AppFooter from '../appbar/AppFooter';
 import { setVideoInfo, readVideoInfo } from './VideoDetailActions';
@@ -23,12 +25,16 @@ import { setVideoInfo, readVideoInfo } from './VideoDetailActions';
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import { Container, Navbar, Nav } from "react-bootstrap";
-import { logout } from "../login/LoginActions";
 
 const STRIPE_KEY = 'pk_test_51I7A7ACXNKb5cnwif3jpr0b4CMx8QRWphNkm6CqvhA8Wi69hP4rtdkfujHEYbrIY2zS0BTkyOWUeYmHeg2oDxipj00pjty4VAo';
 const stripePromise = loadStripe(STRIPE_KEY);
 
 const useStyles = makeStyles({
+  description: {
+     overflow: 'hidden',
+     textOverflow: 'ellipsis',
+     maxHeight: '9vh',
+  },
   root: {
     position: 'relative',
     display: 'flex',
@@ -43,17 +49,24 @@ const useStyles = makeStyles({
     alignItems: 'center',
   },
   card: {
-    maxWidth: 345,
+    maxWidth: 445,
   },
 });
 const VideoDetail = (props) => {
-  const { videoinfo, setVideoInfo, videourl } = props;
+  const { videoinfo, readVideoInfo, videourl } = props;
   const classes = useStyles();
 
   const handleClick = async (event) => {
     // Get Stripe.js instance
     const stripe = await stripePromise;
-    const response = await fetch('http://localhost:8000/create-checkout-session/', { method: 'POST' });
+    const response = await fetch('http://localhost:8000/create-checkout-session/', { 
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({title: videoinfo.title, length: videoinfo.length, url: videourl }),
+       });
     const session = await response.json();
     console.log("session:", session.sessionId);
     // When the customer clicks on the button, redirect them to Checkout.
@@ -79,16 +92,24 @@ const VideoDetail = (props) => {
                 component="img"
                 alt="Contemplative Reptile"
                 height="200"
-                image="https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?auto=format&fit=crop&w=400&q=80"
+                image={ videoinfo.thumbnail_url }
                 title="Contemplative Reptile"
               />
               <CardContent>
                 <Typography gutterBottom variant="h5" component="h2">
-                  {videoinfo.title}
+                  { videoinfo.title }
                 </Typography>
-                <Typography variant="body2" color="textSecondary" component="p">
-                  Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging
-                  across all continents except Antarctica
+                <Typography gutterBottom variant="body2" color="textSecondary" component="p" className={classes.description}>
+                  { videoinfo.description }
+                </Typography>
+                <Typography gutterBottom variant="body2" color="textSecondary" component="p" >
+                  Author: { videoinfo.author }
+                </Typography>
+                <Typography gutterBottom variant="body2" color="textSecondary" component="p" >
+                  Publish Date: { moment(videoinfo.publish_date).format('MMM Do, YYYY') }
+                </Typography>
+                <Typography gutterBottom variant="body2" color="textSecondary" component="p" >
+                  Length: { moment.duration(videoinfo.length, "seconds").humanize() }
                 </Typography>
               </CardContent>
             </CardActionArea>
@@ -110,16 +131,14 @@ const VideoDetail = (props) => {
 
 
 VideoDetail.propTypes = {
-  setVideoInfo: PropTypes.func.isRequired,
   readVideoInfo: PropTypes.func.isRequired,
   videoinfo: PropTypes.object.isRequired
 };
 
 const mapStateToProps = state => ({
-  videoinfo: JSON.parse(localStorage.getItem('videoinfo')),
-  // videoinfo: state.videoinfo,
+  videoinfo: state.video.videoinfo,
 });
 
 export default connect(mapStateToProps, {
-  setVideoInfo, readVideoInfo
+  readVideoInfo
 })(withRouter(VideoDetail));

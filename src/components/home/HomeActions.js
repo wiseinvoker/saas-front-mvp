@@ -28,8 +28,7 @@ export const getVideoInfo = (userData, redirectTo) => dispatch => {
       const video_info = response.data;
       console.log("VideoInfo: ", video_info);
       localStorage.setItem("videoinfo", JSON.stringify(video_info));
-      window.location.href = '/yt-video';
-      // dispatch(push('/yt-video'));
+      dispatch(setVideoInfo(video_info, redirectTo));
     })
     .catch(error => {
       // dispatch(unsetCurrentUser());
@@ -43,15 +42,12 @@ export const setVideoInfo = (data, redirectTo) => dispatch => {
     payload: data
   });
   if (redirectTo !== "") {
-    dispatch(push('/yt-video'));
+    dispatch(push(redirectTo));
   }
 };
 
-export const readVideoInfo = (data, redirectTo) => dispatch => {
+export const readVideoInfo = (data) => dispatch => {
   dispatch({
     type: GET_VIDEO_INFO,
   });
-  if (redirectTo !== "") {
-    dispatch(push('/yt-video'));
-  }
 };
