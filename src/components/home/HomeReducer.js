@@ -1,4 +1,4 @@
-import { SET_VIDEO_INFO, GET_VIDEO_INFO } from "./HomeTypes";
+import { SET_VIDEO_INFO, CLEAR_VIDEO_INFO } from "./HomeTypes";
 
 const initialState = {
   videoinfo: {},
@@ -11,8 +11,10 @@ export const homeReducer = (state = initialState, action) => {
         ...state,
         videoinfo: action.payload
       };
-    case GET_VIDEO_INFO:
-      return state.videoinfo;
+    case CLEAR_VIDEO_INFO:
+      return {
+        videoinfo: {},
+      };
     default:
       return state;
   }

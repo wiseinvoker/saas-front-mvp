@@ -1,14 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import PropTypes from 'prop-types';
-import { withRouter } from "react-router-dom";
-import { connect } from "react-redux";
 import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import InputBase from '@material-ui/core/InputBase';
-import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
-import SearchIcon from '@material-ui/icons/Search';
-import YouTubeIcon from '@material-ui/icons/YouTube';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import Link from '@material-ui/core/Link';

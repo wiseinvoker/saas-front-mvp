@@ -7,18 +7,29 @@ import Paper from '@material-ui/core/Paper';
 import InputBase from '@material-ui/core/InputBase';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import SearchIcon from '@material-ui/icons/Search';
+// import SearchIcon from '@material-ui/icons/Search';
 import YouTubeIcon from '@material-ui/icons/YouTube';
 import Typography from '@material-ui/core/Typography';
-import { createBrowserHistory } from "history";
 
 import HomeLayout from './HomeLayout';
 import AppAppBar from '../appbar/AppAppBar';
 import AppFooter from '../appbar/AppFooter';
-import { getVideoInfo } from './HomeActions';
+import { getVideoInfo, clearVideoInfo } from './HomeActions';
 
-const backgroundImage = '/nlp_sponsored.jpg';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
+import Button from '@material-ui/core/Button';
+import Container from '@material-ui/core/Container';
+import { loadStripe } from '@stripe/stripe-js';
+import moment from 'moment';
 
+
+const STRIPE_KEY = 'pk_test_51I7A7ACXNKb5cnwif3jpr0b4CMx8QRWphNkm6CqvhA8Wi69hP4rtdkfujHEYbrIY2zS0BTkyOWUeYmHeg2oDxipj00pjty4VAo';
+const stripePromise = loadStripe(STRIPE_KEY);
+
+const backgroundImage = '/static/nlp_sponsored.jpg';
 const styles = (theme) => ({
   background: {
     backgroundImage: `url(${backgroundImage})`,
@@ -32,7 +43,7 @@ const styles = (theme) => ({
     marginBottom: theme.spacing(4),
     marginTop: theme.spacing(4),
     [theme.breakpoints.up('sm')]: {
-      marginTop: theme.spacing(10),
+      marginTop: theme.spacing(4),
     },
   },
   more: {
@@ -45,6 +56,10 @@ const styles = (theme) => ({
   iconButton: {
     padding: 10,
   },
+  submitButton: {
+    padding: 10,
+    textTransform:'none',
+  },
   divider: {
     height: 28,
     margin: 4,
@@ -56,17 +71,124 @@ const styles = (theme) => ({
     width: 600,
     marginTop: theme.spacing(4),
   },
+  description: {
+     overflow: 'hidden',
+     textOverflow: 'ellipsis',
+     maxHeight: '9vh',
+  },
+  root: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: theme.spacing(5),
+    width: '80vw',
+  },
+  container: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  card: {
+    // maxWidth: 445,
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  cardactionarea: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  cardmedia: {
+    width: '40%',
+  },
+  cardcontent: {
+    // display: 'flex',
+  },
 });
 
 const Home = (props) => {
-  const { classes, getVideoInfo } = props;
+  const { classes, getVideoInfo, videoinfo, clearVideoInfo } = props;
   const videopath = useFormInput("");
+  let url;
   const onSearch = (event) => {
-    const url = videopath.value;
+    url = videopath.value;
     event.preventDefault();
     // https://www.youtube.com/watch?v=DLX62G4lc44
-    getVideoInfo({url}, "/yt-video");
+    getVideoInfo({url});
   };
+  // handle stripe checkout
+  const handleClick = async (event) => {
+    // Get Stripe.js instance
+    const stripe = await stripePromise;
+    const API_URL = (window.location.origin === "http://localhost:3000") ? "http://127.0.0.1:8000" : window.location.origin;
+    const video_link = localStorage.getItem("videourl");
+    const response = await fetch(API_URL + '/create-checkout-session/', { 
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({title: videoinfo.title, length: videoinfo.length, url: video_link }),
+       });
+    const session = await response.json();
+    console.log("session:", session.sessionId);
+    if ( session.sessionId ) {
+      clearVideoInfo();
+      // When the customer clicks on the button, redirect them to Checkout.
+      const result = await stripe.redirectToCheckout({
+        sessionId: session.sessionId,
+      });
+
+      if (result.error) {
+        console.log("Stripe error:", result.error.message);
+      }
+    }
+  };
+
+  let videoDetail;
+  if (videoinfo.title) {
+    videoDetail = (
+      <section className={classes.root}>
+        <Container className={classes.container}>
+          <Card className={classes.card}>
+            <CardMedia
+              component="img"
+              alt="Contemplative Reptile"
+              image={ videoinfo.thumbnail_url }
+              title="Contemplative Reptile"
+              className={classes.cardmedia}
+            />
+            <CardContent className={classes.cardcontent}>
+              <Typography gutterBottom variant="h5" component="h2">
+                { videoinfo.title }
+              </Typography>
+              <Typography gutterBottom variant="body2" color="textSecondary" component="p" className={classes.description}>
+                { videoinfo.description }
+              </Typography>
+              <Typography gutterBottom variant="body2" color="textSecondary" component="p" >
+                Author: { videoinfo.author }
+              </Typography>
+              <Typography gutterBottom variant="body2" color="textSecondary" component="p" >
+                Publish Date: { moment(videoinfo.publish_date).format('MMM Do, YYYY') }
+              </Typography>
+              <Typography gutterBottom variant="body2" color="textSecondary" component="p" >
+                Length: { moment.utc(moment.duration(videoinfo.length, "seconds").asMilliseconds()).format("HH:mm") }
+              </Typography>
+              <Typography gutterBottom variant="body2" color="textSecondary" component="p" >
+                Price: { parseInt(videoinfo.length/60) > 50 ? parseInt(videoinfo.length/60)/100 : 50/100 } USD
+              </Typography>
+              <CardActions>
+                <Button size="small" color="primary" onClick={handleClick}>
+                  Checkout
+                </Button>
+              </CardActions>
+            </CardContent>
+          </Card>    
+        </Container>
+      </section>
+      );
+  } else {
+    videoDetail = <section className={classes.root} />;
+  }
+
   return (
     <React.Fragment>
       <AppAppBar />
@@ -82,18 +204,17 @@ const Home = (props) => {
           <Divider className={classes.divider} orientation="vertical" />
           <InputBase
             className={classes.input}
-            placeholder="YouTube URL"
+            placeholder="YouTube Link"
             inputProps={{ 'aria-label': 'search youtube video' }}
             {...videopath}
             required
           />
-          <IconButton type="submit" className={classes.iconButton} aria-label="search" onClick={onSearch}>
-            <SearchIcon />
-          </IconButton>
+          <Divider className={classes.divider} orientation="vertical" />
+          <Button type="submit" className={classes.submitButton} aria-label="search" onClick={onSearch}>
+            Transcribe Now
+          </Button>
         </Paper>
-        <Typography color="inherit" align="center" variant="h5" className={classes.h5}>
-          Get the full transcription of Youtube video now!
-        </Typography>
+        { videoDetail }
       </HomeLayout>
       <AppFooter />
     </React.Fragment>
@@ -118,13 +239,15 @@ function useFormInput(initialValue) {
 
 Home.propTypes = {
   classes: PropTypes.object.isRequired,
+  videoinfo: PropTypes.object.isRequired,
   getVideoInfo: PropTypes.func.isRequired,
+  clearVideoInfo: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => ({
-  videourl: state.videourl
+  videoinfo: state.video.videoinfo,
 });
 
 export default connect(mapStateToProps, {
-  getVideoInfo
+  getVideoInfo, clearVideoInfo
 })(withRouter(withStyles(styles)(Home)));
