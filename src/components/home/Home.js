@@ -25,7 +25,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import moment from 'moment';
 
 
-const STRIPE_KEY = 'pk_test_51I7A7ACXNKb5cnwif3jpr0b4CMx8QRWphNkm6CqvhA8Wi69hP4rtdkfujHEYbrIY2zS0BTkyOWUeYmHeg2oDxipj00pjty4VAo';
+const STRIPE_KEY = 'STRIPE_SECRET_KEY';
 const stripePromise = loadStripe(STRIPE_KEY);
 
 const backgroundImage = '/static/nlp_sponsored.jpg';
