@@ -3,11 +3,8 @@ import Root from "./Root";
 import { Route, Switch } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import Home from "./components/home/Home";
-// import Home from "./Home";
 import Signup from "./components/signup/Signup";
 import Login from "./components/login/Login";
-// import Dashboard from "./components/video/Dashboard";
-import VideoDetail from "./components/video/VideoDetail";
 import SuccessPage from "./components/results/Success";
 import CanceledPage from "./components/results/Canceled";
 
@@ -28,7 +25,6 @@ class App extends Component {
         <Root>
           <ToastContainer hideProgressBar={true} newestOnTop={true} />
           <Switch>
-            <Route path="/yt-video" component={VideoDetail} />
             <Route path="/signup" component={Signup} />
             <Route path="/login" component={Login} />
             <Route path="/success" component={SuccessPage} />

@@ -14,10 +14,9 @@ import Typography from '@material-ui/core/Typography';
 import HomeLayout from './HomeLayout';
 import AppAppBar from '../appbar/AppAppBar';
 import AppFooter from '../appbar/AppFooter';
-import { getVideoInfo, clearVideoInfo } from './HomeActions';
+import { getVideoInfo, clearVideoInfo, setButtonTitle } from './HomeActions';
 
 import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Button from '@material-ui/core/Button';
@@ -105,17 +104,21 @@ const styles = (theme) => ({
 });
 
 const Home = (props) => {
-  const { classes, getVideoInfo, videoinfo, clearVideoInfo } = props;
+  const { classes, getVideoInfo, videoinfo, clearVideoInfo, buttontitle, setButtonTitle } = props;
   const videopath = useFormInput("");
   let url;
   const onSearch = (event) => {
-    url = videopath.value;
     event.preventDefault();
-    // https://www.youtube.com/watch?v=DLX62G4lc44
-    getVideoInfo({url});
+    if (buttontitle === 'Search') {
+      url = videopath.value;
+      // https://www.youtube.com/watch?v=DLX62G4lc44
+      getVideoInfo({url});
+    } else if (buttontitle === 'Transcribe Now') {
+      handleCheckout();
+    }
   };
   // handle stripe checkout
-  const handleClick = async (event) => {
+  const handleCheckout = async (event) => {
     // Get Stripe.js instance
     const stripe = await stripePromise;
     const API_URL = (window.location.origin === "http://localhost:3000") ? "http://127.0.0.1:8000" : window.location.origin;
@@ -132,6 +135,7 @@ const Home = (props) => {
     console.log("session:", session.sessionId);
     if ( session.sessionId ) {
       clearVideoInfo();
+      setButtonTitle("Search");
       // When the customer clicks on the button, redirect them to Checkout.
       const result = await stripe.redirectToCheckout({
         sessionId: session.sessionId,
@@ -175,11 +179,6 @@ const Home = (props) => {
               <Typography gutterBottom variant="body2" color="textSecondary" component="p" >
                 Price: { parseInt(videoinfo.length/60) > 50 ? parseInt(videoinfo.length/60)/100 : 50/100 } USD
               </Typography>
-              <CardActions>
-                <Button size="small" color="primary" onClick={handleClick}>
-                  Checkout
-                </Button>
-              </CardActions>
             </CardContent>
           </Card>    
         </Container>
@@ -211,7 +210,7 @@ const Home = (props) => {
           />
           <Divider className={classes.divider} orientation="vertical" />
           <Button type="submit" className={classes.submitButton} aria-label="search" onClick={onSearch}>
-            Transcribe Now
+            { buttontitle }
           </Button>
         </Paper>
         { videoDetail }
@@ -242,12 +241,14 @@ Home.propTypes = {
   videoinfo: PropTypes.object.isRequired,
   getVideoInfo: PropTypes.func.isRequired,
   clearVideoInfo: PropTypes.func.isRequired,
+  setButtonTitle: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => ({
   videoinfo: state.video.videoinfo,
+  buttontitle: state.video.buttontitle,
 });
 
 export default connect(mapStateToProps, {
-  getVideoInfo, clearVideoInfo
+  getVideoInfo, clearVideoInfo, setButtonTitle
 })(withRouter(withStyles(styles)(Home)));

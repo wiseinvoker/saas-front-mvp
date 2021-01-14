@@ -1,7 +1,8 @@
-import { SET_VIDEO_INFO, CLEAR_VIDEO_INFO } from "./HomeTypes";
+import { SET_VIDEO_INFO, CLEAR_VIDEO_INFO, SET_BUTTON_TITLE } from "./HomeTypes";
 
 const initialState = {
   videoinfo: {},
+  buttontitle: "Search",
 };
 
 export const homeReducer = (state = initialState, action) => {
@@ -13,7 +14,13 @@ export const homeReducer = (state = initialState, action) => {
       };
     case CLEAR_VIDEO_INFO:
       return {
+        ...state,
         videoinfo: {},
+      };
+    case SET_BUTTON_TITLE:
+      return {
+        ...state,
+        buttontitle: action.payload,
       };
     default:
       return state;
